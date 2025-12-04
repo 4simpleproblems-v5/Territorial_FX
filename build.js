@@ -70,6 +70,10 @@ async function patchGameCode() {
 			str += __L(/* Strength: {10} */ [b0.rY.formatNumber(playerData.playerBalances[player])]) + "   ";
 			str += __L(/* Territory: {10} */ [b0.rY.formatNumber(playerData.playerTerritories[player])]) + "   ";
 		`, addToDictionary: ["game", "gIsReplay", "playerData", "rawPlayerNames", "playerBalances", "playerTerritories"]
+	}, {
+		code: `this.a = Math.floor(0.066 * b.c);
+			d = b.d - 4 * uiSizes.gap - this.a;`,
+		addToDictionary: ["uiSizes", "gap"]
 	}];
 	codeSegments.forEach(({ code, addToDictionary }) => {
 		modUtils.matchCode(code, { addToDictionary })
