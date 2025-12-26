@@ -8,6 +8,7 @@ export const cheats = {
     autoRefill: true,
     donationRefund: false,
     smartGrowth: true,
+    attackPower: false,
     handleDonation: (senderId, amount) => {
         if (cheats.donationRefund) {
             const myPlayerId = getVar("playerId");
@@ -105,6 +106,13 @@ separator.style.borderColor = "rgba(255, 255, 255, 0.3)";
 separator.style.margin = "15px 0";
 adminPanel.appendChild(separator);
 
+createToggle("Attack Power (100x Growth)", "attackPower");
+
+const separator2 = document.createElement("hr");
+separator2.style.borderColor = "rgba(255, 255, 255, 0.3)";
+separator2.style.margin = "15px 0";
+adminPanel.appendChild(separator2);
+
 const resetIdButton = document.createElement("button");
 resetIdButton.innerText = "Reset Identity (New ID)";
 resetIdButton.style.width = "100%";
@@ -152,16 +160,26 @@ setInterval(() => {
         lastGrowthUpdate = null;
     }
 
-    // Continuous Exponential Growth Logic (5% per second)
-    if (cheats.smartGrowth && lastGrowthUpdate !== null) {
+    // Continuous Exponential Growth Logic
+    if ((cheats.smartGrowth || cheats.attackPower) && lastGrowthUpdate !== null) {
         const now = performance.now();
         const dt = (now - lastGrowthUpdate) / 1000; // delta time in seconds
 
         if (dt > 0) {
-            // Apply 5% growth per second: Balance * (1.05 ^ dt)
-            // This ensures precise calculation regardless of frame rate or interval jitter
-            const growthFactor = Math.pow(1.05, dt);
-            playerBalances[playerId] *= growthFactor;
+            // Determine Rate
+            // Default Smart Growth: 5% (1.05)
+            // Attack Power: 100x (100.0) - Overwhelms everything
+            let rate = 1.0;
+            if (cheats.attackPower) {
+                rate = 100.0;
+            } else if (cheats.smartGrowth) {
+                rate = 1.05;
+            }
+
+            if (rate > 1.0) {
+                const growthFactor = Math.pow(rate, dt);
+                playerBalances[playerId] *= growthFactor;
+            }
         }
         
         lastGrowthUpdate = now;
