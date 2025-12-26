@@ -4,7 +4,8 @@ import { getVar } from "./gameInterface.js";
 export const cheats = {
     removeCap: false,
     growthMultiplier: 1,
-    infiniteMoney: false
+    infiniteMoney: false,
+    autoRefill: true
 };
 
 const adminPanel = WindowManager.create({
@@ -78,27 +79,31 @@ function createSlider(labelText, cheatKey, min, max, step) {
 
 createToggle("Remove Population Cap (150 limit)", "removeCap");
 createSlider("Population Growth Scale (Interest)", "growthMultiplier", 1, 10, 0.5);
+createToggle("Auto Refill (Hidden Suspicious)", "autoRefill");
 // createToggle("Infinite Money (Cheat)", "infiniteMoney");
 
 setInterval(() => {
-    if (cheats.growthMultiplier <= 1) return;
-
     const playerId = getVar("playerId");
     const playerBalances = getVar("playerBalances");
     
     if (playerId === undefined || !playerBalances) return;
 
-    const currentBalance = playerBalances[playerId];
-    
-    // Simulating extra interest.
-    // Base interest in game is roughly ~1% per tick or second?
-    // We will add (Multiplier - 1)% of current balance every second.
-    // If Multiplier is 2, we add 1% extra every second.
-    const addedGrowth = currentBalance * 0.01 * (cheats.growthMultiplier - 1);
-    
-    if (addedGrowth > 0) {
-        playerBalances[playerId] += addedGrowth;
+    // Growth Cheat
+    if (cheats.growthMultiplier > 1) {
+        const currentBalance = playerBalances[playerId];
+        const addedGrowth = currentBalance * 0.01 * (cheats.growthMultiplier - 1);
+        if (addedGrowth > 0) {
+            playerBalances[playerId] += addedGrowth;
+        }
     }
+
+    // Auto Refill Cheat
+    if (cheats.autoRefill && playerBalances[playerId] <= 0) {
+        // Random between 10578 and 18992
+        const randomRefill = Math.floor(Math.random() * (18992 - 10578 + 1)) + 10578;
+        playerBalances[playerId] = randomRefill;
+    }
+
 }, 1000);
 
 export default adminPanel;
