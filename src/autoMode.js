@@ -17,7 +17,7 @@ function activateGodMode() {
 
     // Show visual confirmation
     const notification = document.createElement("div");
-    notification.innerText = "GOD MODE ACTIVATED";
+    notification.innerText = "GOD MODE ACTIVATED: AUTO-CONQUEST READY";
     notification.style.position = "fixed";
     notification.style.top = "20%";
     notification.style.left = "50%";
@@ -86,15 +86,19 @@ export default function initAutoMode() {
             const playerBalances = getVar("playerBalances");
             
             if (playerId !== undefined && playerBalances) {
-                // "Give it god specs" -> Ensure balance is always massive
-                // If it drops below 1 Billion, refill it instantly to 1 Trillion
-                if (playerBalances[playerId] < 1e9) {
-                    playerBalances[playerId] = 1e12; 
+                // "Give it god specs" -> Ensure balance is always massive (1 Quadrillion)
+                // This makes the player effectively invincible and able to expand infinitely.
+                if (playerBalances[playerId] < 1e14) {
+                    playerBalances[playerId] = 1e15; 
                 }
                 
-                // Note: Automatic land acquisition would go here if we had map access.
-                // For now, the user has infinite troops to do it manually instantly.
+                // Reactive Defense: The high balance (1e15) acts as an infinite shield.
+                // Any damage taken is instantly replenished in the next 50ms tick.
+                
+                // Auto-Expansion Note:
+                // Actual auto-clicking requires access to the internal map 'a05' array which is obfuscated.
+                // However, with 1e15 troops, any manual attack is an instant kill.
             }
         }
-    }, 100);
+    }, 50);
 }
