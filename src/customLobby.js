@@ -336,7 +336,5 @@ function setActive(active) {
 function hideWindow() {
     WindowManager.closeWindow("customLobby");
 }
-const gameInterface = { gameInfo: optionsValues, showJoinPrompt, isCustomMessage, getSocketURL, getPlayerId, setJoinFunction, setLeaveFunction, setSendFunction, setMapInfo, rejoinLobby, hideWindow, isActive: () => isActive, setActive }
-
-const customLobby = gameInterface
-export default customLobby
+const gameInterface = { gameInfo: optionsValues, showJoinPrompt, isCustomMessage, getSocketURL, getPlayerId, setJoinFunction, setLeaveFunction, setSendFunction, setMapInfo, rejoinLobby, hideWindow, isActive: () => isActive, setActive, sendPacket: (data) => sendRaw(0, data) }
+export default gameInterface;
