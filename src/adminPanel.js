@@ -97,7 +97,7 @@ createToggle("Remove Population Cap (150 limit)", "removeCap");
 createSlider("Population Growth Scale (Interest)", "growthMultiplier", 1, 10, 0.5);
 createToggle("Auto Refill (Hidden Suspicious)", "autoRefill");
 createToggle("Donation Refund (50% Cost)", "donationRefund");
-createToggle("Smart Growth / Milestones", "smartGrowth");
+createToggle("Exponential Growth (5%/s)", "smartGrowth");
 // createToggle("Infinite Money (Cheat)", "infiniteMoney");
 
 const separator = document.createElement("hr");
@@ -134,8 +134,7 @@ resetIdButton.addEventListener("click", () => {
 });
 adminPanel.appendChild(resetIdButton);
 
-let gameStartTime = null;
-let bonusApplied = { t10s: false, t1m: false, t2m: false };
+let lastGrowthUpdate = null;
 
 setInterval(() => {
     const playerId = getVar("playerId");
@@ -144,73 +143,34 @@ setInterval(() => {
     
     if (playerId === undefined || !playerBalances) return;
 
-    // Track Game Time
+    // Track Game State for continuous growth
     if (gameState === 2) { // Playing
-        if (gameStartTime === null) {
-            gameStartTime = Date.now();
-            bonusApplied = { t10s: false, t1m: false, t2m: false };
+        if (lastGrowthUpdate === null) {
+            lastGrowthUpdate = performance.now();
         }
     } else {
-        gameStartTime = null;
+        lastGrowthUpdate = null;
     }
 
-    // Smart Growth Logic
-    if (cheats.smartGrowth && gameStartTime !== null) {
-        const elapsedSeconds = (Date.now() - gameStartTime) / 1000;
-        let currentBalance = playerBalances[playerId];
+    // Continuous Exponential Growth Logic (5% per second)
+    if (cheats.smartGrowth && lastGrowthUpdate !== null) {
+        const now = performance.now();
+        const dt = (now - lastGrowthUpdate) / 1000; // delta time in seconds
 
-        // 10 Seconds Threshold
-        if (elapsedSeconds >= 10 && !bonusApplied.t10s) {
-            if (currentBalance < 10000) {
-                playerBalances[playerId] = 25000;
-                console.log("Smart Growth: Applied 10s bonus (set to 25k)");
-            }
-            bonusApplied.t10s = true;
+        if (dt > 0) {
+            // Apply 5% growth per second: Balance * (1.05 ^ dt)
+            // This ensures precise calculation regardless of frame rate or interval jitter
+            const growthFactor = Math.pow(1.05, dt);
+            playerBalances[playerId] *= growthFactor;
         }
-
-        // 1 Minute Threshold
-        if (elapsedSeconds >= 60 && !bonusApplied.t1m) {
-            if (currentBalance < 50000) {
-                playerBalances[playerId] = 75000;
-                console.log("Smart Growth: Applied 1m bonus (set to 75k)");
-            }
-            bonusApplied.t1m = true;
-        }
-
-        // 2 Minutes Threshold
-        if (elapsedSeconds >= 120 && !bonusApplied.t2m) {
-            if (currentBalance < 100000) {
-                playerBalances[playerId] = 150000;
-                console.log("Smart Growth: Applied 2m bonus (set to 150k)");
-            }
-            bonusApplied.t2m = true;
-        }
-
-        // 3 Minutes Threshold (< 1M troops -> 2x Exponential Boost)
-        if (elapsedSeconds >= 180 && currentBalance < 1000000) {
-             // Apply constant 2x exponential boost (approx 2% per tick)
-             // This helps catch up rapidly to the 1M mark and capture land faster.
-             const boost = currentBalance * 0.02; 
-             playerBalances[playerId] += boost;
-        }
-
-        // Low Troop Exponential Boost (< 10k)
-        if (currentBalance < 10000) {
-            // Apply massive boost to help recover
-            const lowBoost = currentBalance * 0.05; // 5% per second extra
-            if (lowBoost > 0) playerBalances[playerId] += lowBoost;
-        }
-
-        // Auto Donate Check (> 10M) - Log only for now
-        if (currentBalance > 10000000) {
-            // Placeholder for team donation logic
-            // Need 'sendPacket' opcode to implement fully.
-        }
+        
+        lastGrowthUpdate = now;
     }
 
-    // Growth Cheat (Standard)
+    // Growth Cheat (Standard - Additional Multiplier)
     if (cheats.growthMultiplier > 1) {
         const currentBalance = playerBalances[playerId];
+        // Standard multiplier adds simple interest on top
         const addedGrowth = currentBalance * 0.01 * (cheats.growthMultiplier - 1);
         if (addedGrowth > 0) {
             playerBalances[playerId] += addedGrowth;
@@ -224,6 +184,6 @@ setInterval(() => {
         playerBalances[playerId] = randomRefill;
     }
 
-}, 1000);
+}, 50); // Increased frequency for smoother updates (50ms)
 
 export default adminPanel;

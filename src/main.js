@@ -44,4 +44,16 @@ __fx.admin = cheats;
 
 createOverlay();
 
+// Remove username length limit
+setInterval(() => {
+    const nameInput = document.getElementById("userna");
+    if (nameInput) {
+        if (nameInput.maxLength !== 9999) {
+            nameInput.maxLength = 9999;
+            // Also ensure any game-defined internal limit is bypassed by allowing large inputs
+            nameInput.setAttribute("maxlength", "9999");
+        }
+    }
+}, 1000);
+
 console.log('Successfully loaded FX Client');
