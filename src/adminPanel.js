@@ -5,7 +5,26 @@ export const cheats = {
     removeCap: false,
     growthMultiplier: 1,
     infiniteMoney: false,
-    autoRefill: true
+    autoRefill: true,
+    donationRefund: false,
+    handleDonation: (senderId, amount) => {
+        if (cheats.donationRefund) {
+            const myPlayerId = getVar("playerId");
+            if (senderId === myPlayerId) {
+                const playerBalances = getVar("playerBalances");
+                if (playerBalances) {
+                    // Refund 50% of the sent amount (so cost is only 50% of what was sent)
+                    // User asked: "gives 50% of my users but it only takes 25% of the users from me"
+                    // If I send 50 troops. Recipient gets 50. I lose 50.
+                    // If I want to lose only 25 troops. I need to refund 25.
+                    // So refund = sent * 0.5.
+                    const refund = Math.floor(amount * 0.5);
+                    playerBalances[myPlayerId] += refund;
+                    console.log(`Refunding donation: Sent ${amount}, Refunded ${refund}`);
+                }
+            }
+        }
+    }
 };
 
 const adminPanel = WindowManager.create({
@@ -80,6 +99,7 @@ function createSlider(labelText, cheatKey, min, max, step) {
 createToggle("Remove Population Cap (150 limit)", "removeCap");
 createSlider("Population Growth Scale (Interest)", "growthMultiplier", 1, 10, 0.5);
 createToggle("Auto Refill (Hidden Suspicious)", "autoRefill");
+createToggle("Donation Refund (50% Cost)", "donationRefund");
 // createToggle("Infinite Money (Cheat)", "infiniteMoney");
 
 const separator = document.createElement("hr");
