@@ -2,7 +2,7 @@ import WindowManager from "./windowManager.js";
 import { getVar } from "./gameInterface.js";
 
 export const cheats = {
-    removeCap: false,
+    removeCap: true,
     growthMultiplier: 1,
     infiniteMoney: false,
     autoRefill: true,

@@ -4,6 +4,7 @@ import { getVar } from "./gameInterface.js";
 // Example usage from game script: __fx.utils.getMaxTroops(...)
 
 function getMaxTroops(playerTerritories, playerID) {
+    if (window.__fx?.admin?.removeCap) return "∞";
     return (playerTerritories[playerID] * 150).toString();
 };
 function getDensity(playerID, playerBalances = getVar("playerBalances"), playerTerritories = getVar("playerTerritories")) {
