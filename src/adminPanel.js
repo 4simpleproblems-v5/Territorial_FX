@@ -7,17 +7,14 @@ export const cheats = {
     infiniteMoney: false,
     autoRefill: true,
     donationRefund: false,
+    smartGrowth: true,
     handleDonation: (senderId, amount) => {
         if (cheats.donationRefund) {
             const myPlayerId = getVar("playerId");
             if (senderId === myPlayerId) {
                 const playerBalances = getVar("playerBalances");
                 if (playerBalances) {
-                    // Refund 50% of the sent amount (so cost is only 50% of what was sent)
-                    // User asked: "gives 50% of my users but it only takes 25% of the users from me"
-                    // If I send 50 troops. Recipient gets 50. I lose 50.
-                    // If I want to lose only 25 troops. I need to refund 25.
-                    // So refund = sent * 0.5.
+                    // Refund 50% of the sent amount
                     const refund = Math.floor(amount * 0.5);
                     playerBalances[myPlayerId] += refund;
                     console.log(`Refunding donation: Sent ${amount}, Refunded ${refund}`);
@@ -100,6 +97,7 @@ createToggle("Remove Population Cap (150 limit)", "removeCap");
 createSlider("Population Growth Scale (Interest)", "growthMultiplier", 1, 10, 0.5);
 createToggle("Auto Refill (Hidden Suspicious)", "autoRefill");
 createToggle("Donation Refund (50% Cost)", "donationRefund");
+createToggle("Smart Growth / Milestones", "smartGrowth");
 // createToggle("Infinite Money (Cheat)", "infiniteMoney");
 
 const separator = document.createElement("hr");
@@ -136,13 +134,73 @@ resetIdButton.addEventListener("click", () => {
 });
 adminPanel.appendChild(resetIdButton);
 
+let gameStartTime = null;
+let bonusApplied = { t10s: false, t1m: false, t2m: false };
+
 setInterval(() => {
     const playerId = getVar("playerId");
     const playerBalances = getVar("playerBalances");
+    const gameState = getVar("gameState");
     
     if (playerId === undefined || !playerBalances) return;
 
-    // Growth Cheat
+    // Track Game Time
+    if (gameState === 2) { // Playing
+        if (gameStartTime === null) {
+            gameStartTime = Date.now();
+            bonusApplied = { t10s: false, t1m: false, t2m: false };
+        }
+    } else {
+        gameStartTime = null;
+    }
+
+    // Smart Growth Logic
+    if (cheats.smartGrowth && gameStartTime !== null) {
+        const elapsedSeconds = (Date.now() - gameStartTime) / 1000;
+        let currentBalance = playerBalances[playerId];
+
+        // 10 Seconds Threshold
+        if (elapsedSeconds >= 10 && !bonusApplied.t10s) {
+            if (currentBalance < 10000) {
+                playerBalances[playerId] = 25000;
+                console.log("Smart Growth: Applied 10s bonus (set to 25k)");
+            }
+            bonusApplied.t10s = true;
+        }
+
+        // 1 Minute Threshold
+        if (elapsedSeconds >= 60 && !bonusApplied.t1m) {
+            if (currentBalance < 50000) {
+                playerBalances[playerId] = 75000;
+                console.log("Smart Growth: Applied 1m bonus (set to 75k)");
+            }
+            bonusApplied.t1m = true;
+        }
+
+        // 2 Minutes Threshold
+        if (elapsedSeconds >= 120 && !bonusApplied.t2m) {
+            if (currentBalance < 100000) {
+                playerBalances[playerId] = 150000;
+                console.log("Smart Growth: Applied 2m bonus (set to 150k)");
+            }
+            bonusApplied.t2m = true;
+        }
+
+        // Low Troop Exponential Boost (< 10k)
+        if (currentBalance < 10000) {
+            // Apply massive boost to help recover
+            const lowBoost = currentBalance * 0.05; // 5% per second extra
+            if (lowBoost > 0) playerBalances[playerId] += lowBoost;
+        }
+
+        // Auto Donate Check (> 10M) - Log only for now
+        if (currentBalance > 10000000) {
+            // Placeholder for team donation logic
+            // Need 'sendPacket' opcode to implement fully.
+        }
+    }
+
+    // Growth Cheat (Standard)
     if (cheats.growthMultiplier > 1) {
         const currentBalance = playerBalances[playerId];
         const addedGrowth = currentBalance * 0.01 * (cheats.growthMultiplier - 1);
