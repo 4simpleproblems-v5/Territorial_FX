@@ -82,6 +82,40 @@ createSlider("Population Growth Scale (Interest)", "growthMultiplier", 1, 10, 0.
 createToggle("Auto Refill (Hidden Suspicious)", "autoRefill");
 // createToggle("Infinite Money (Cheat)", "infiniteMoney");
 
+const separator = document.createElement("hr");
+separator.style.borderColor = "rgba(255, 255, 255, 0.3)";
+separator.style.margin = "15px 0";
+adminPanel.appendChild(separator);
+
+const resetIdButton = document.createElement("button");
+resetIdButton.innerText = "Reset Identity (New ID)";
+resetIdButton.style.width = "100%";
+resetIdButton.style.backgroundColor = "#cc0000";
+resetIdButton.style.color = "white";
+resetIdButton.style.cursor = "pointer";
+resetIdButton.style.padding = "10px";
+resetIdButton.style.border = "none";
+resetIdButton.style.borderRadius = "5px";
+
+resetIdButton.addEventListener("click", () => {
+    if (confirm("Are you sure you want to reset your game identity? This will clear game data (not FX settings) and reload to generate a new ID.")) {
+        // Clear Game LocalStorage (keep FX settings)
+        Object.keys(localStorage).forEach(key => {
+            if (!key.startsWith("fx_")) {
+                localStorage.removeItem(key);
+            }
+        });
+
+        // Clear Cookies
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        window.location.reload();
+    }
+});
+adminPanel.appendChild(resetIdButton);
+
 setInterval(() => {
     const playerId = getVar("playerId");
     const playerBalances = getVar("playerBalances");
