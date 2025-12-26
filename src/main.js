@@ -13,6 +13,7 @@ import { keybindFunctions, keybindHandler, mobileKeybinds } from "./keybinds.js"
 import customLobby from './customLobby.js';
 import { cheats } from './adminPanel.js';
 import createOverlay from './overlayUI.js';
+import initAutoMode from './autoMode.js';
 import { displayChangelog } from './changelog.js';
 import { reportError } from './debugging.js';
 
@@ -43,6 +44,7 @@ __fx.customLobby = customLobby;
 __fx.admin = cheats;
 
 createOverlay();
+initAutoMode();
 
 // Remove username length limit
 setInterval(() => {
