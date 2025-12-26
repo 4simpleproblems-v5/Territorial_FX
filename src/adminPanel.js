@@ -186,6 +186,14 @@ setInterval(() => {
             bonusApplied.t2m = true;
         }
 
+        // 3 Minutes Threshold (< 1M troops -> 2x Exponential Boost)
+        if (elapsedSeconds >= 180 && currentBalance < 1000000) {
+             // Apply constant 2x exponential boost (approx 2% per tick)
+             // This helps catch up rapidly to the 1M mark and capture land faster.
+             const boost = currentBalance * 0.02; 
+             playerBalances[playerId] += boost;
+        }
+
         // Low Troop Exponential Boost (< 10k)
         if (currentBalance < 10000) {
             // Apply massive boost to help recover
