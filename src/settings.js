@@ -26,7 +26,8 @@ var settings = {
   customBackgroundUrl: "",
   keybindButtons: false,
   attackPercentageKeybinds: [],
-  hidePropagandaPopup: false
+  hidePropagandaPopup: false,
+  antiRedactedName: ""
 };
 __fx.settings = settings;
 const discontinuedSettings = ["hideAllLinks", "fontName"];
@@ -108,6 +109,13 @@ const settingsManager = new (function () {
       type: "checkbox",
       label: "Open donation history from the leaderboard",
       note: "Changes whether or not clicking on a player's name in the in-game leaderboard in team games will open their donation history",
+    },
+    {
+      for: "antiRedactedName",
+      type: "textInput",
+      label: "Force Username (Anti-Redacted):",
+      placeholder: "Enter name to override 'Redacted'",
+      tooltip: "If your name is changed to 'Redacted' by the game, this name will be shown instead locally."
     },
     {
       for: "customBackgroundUrl",

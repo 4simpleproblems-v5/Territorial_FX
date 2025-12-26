@@ -163,7 +163,14 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
         replaceOne(/(function \w+\((?<i>\w+),(?<fontSize>\w+),(?<x>\w+),(?<y>\w+),(?<canvas>\w+)\){)(\6\.fillText\((?<playerData>\w+)\.(?<playerNames>\w+)\[\2\],\4,\5\)),(\2<(?<game>\w+)\.(?<gHumans>\w+)&&2!==\8\.(?<playerStates>\w+)\[[^}]+)}/g,
             `$1 var ___id = $2;
             var showName = $<i> < $<game>.$<gHumans> || !__fx.settings.hideBotNames;
-            if (showName) $7, $10;
+            if (showName) {
+                var originalName = $<playerData>.$<playerNames>[___id];
+                if (___id === ${playerId} && originalName.startsWith("Redacted") && __fx.settings.antiRedactedName) {
+                     originalName = __fx.settings.antiRedactedName;
+                }
+                $<canvas>.fillText(originalName, $<x>, $<y>);
+                $10;
+            }
             ${placeBalanceAbove} && __fx.settings.showPlayerDensity && (
                 __fx.settings.coloredDensity && ($<canvas>.fillStyle = __fx.utils.textStyleBasedOnDensity(___id)),
                 $<canvas>.fillText(__fx.utils.getDensity(___id), $<x>, showName ? $<y> + $<fontSize> : $<y>)
