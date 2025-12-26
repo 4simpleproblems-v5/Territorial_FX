@@ -67,15 +67,17 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
     { // Add Troop Density and Maximum Troops in side panel
         const { valuesArray } = replaceRawCode(`,labels[5]=__L(0,"Interest"),labels[6]=__L(),labels[7]=__L(),(truncatedLabels=new Array(labels.length)).fill(""),(valuesArray=new Array(labels.length))[0]=game.io?`,
             `,labels[5]=__L(0,"Interest"),labels[6]=__L(),labels[7]=__L(),
-		labels.push("Max Troops", "Density"), // add labels
+		labels.push("Max Troops", "Density", "Growth Mod", "Cap Status"), // add labels
 		(truncatedLabels=new Array(labels.length)).fill(""),(valuesArray=new Array(labels.length))[0]=game.io?`);
         replaceOne(new RegExp(/(:(?<valueIndex>\w+)<7\?\w+\.\w+\.\w+\(valuesArray\[\2\]\)):(\w+\.\w+\(valuesArray\[7\]\))}/
             .source.replace(/valuesArray/g, valuesArray), "g"),
             '$1 : $<valueIndex> === 7 ? $3 '
             + `: $<valueIndex> === 8 ? __fx.utils.getMaxTroops(${dict.playerData}.${dict.playerTerritories}, ${playerId}) `
-            + `: __fx.utils.getDensity(${playerId}) }`);
-        // increase the size of the side panel by 25% to make the text easier to read
-        replaceOne(/(this\.\w+=Math\.floor\(\(\w+\.\w+\.\w+\(\)\?\.1646:\.126\))\*(\w+\.\w+\),)/g, "$1 * 1.25 * $2");
+            + `: $<valueIndex> === 9 ? __fx.utils.getDensity(${playerId}) `
+            + `: $<valueIndex> === 10 ? __fx.admin.growthMultiplier.toFixed(1) + "x" `
+            + `: (__fx.admin.removeCap ? "OFF" : "ON") }`);
+        // increase the size of the side panel by 40% to make the text easier to read
+        replaceOne(/(this\.\w+=Math\.floor\(\(\w+\.\w+\.\w+\(\)\?\.1646:\.126\))\*(\w+\.\w+\),)/g, "$1 * 1.40 * $2");
     }
 
     // Increment win counter on wins
@@ -92,12 +94,14 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
         replaceRawCode(`,new nQ("☰<br>"+__L(),function(){aD6(3)},aa.ks),new nQ("",function(){at.d5(12)},aa.kg,!1)]`,
             `,new nQ("☰<br>"+__L(),function(){aD6(3)},aa.ks),new nQ("",function(){at.d5(12)},aa.kg,!1),
             new nQ("FX Client settings", function() { __fx.WindowManager.openWindow("settings"); }, "rgba(0, 0, 20, 0.5)"),
+            new nQ("Admin Panel", function() { __fx.WindowManager.openWindow("adminPanel"); }, "rgba(100, 0, 0, 0.5)"),
             new nQ("Join/Create custom lobby", function() { __fx.customLobby.showJoinPrompt(); }, "rgba(20, 9, 77, 0.5)")]`)
         // set position
         replaceRawCode(`aZ.g5.vO(aD3[3].button,x+a0S+gap,a3X+h+gap,a0S,h);`,
             `aZ.g5.vO(aD3[3].button,x+a0S+gap,a3X+h+gap,a0S,h);
             aZ.g5.vO(aD3[5].button, x, a3X + h * 2 + gap * 2, a0S * 2 + gap, h / 3);
-            aZ.g5.vO(aD3[6].button, x, a3X + h * 2.33 + gap * 3, a0S * 2 + gap, h / 3);`);
+            aZ.g5.vO(aD3[6].button, x, a3X + h * 2.33 + gap * 3, a0S * 2 + gap, h / 3);
+            aZ.g5.vO(aD3[7].button, x, a3X + h * 2.66 + gap * 4, a0S * 2 + gap, h / 3);`);
     }
 
     { // Keybinds
@@ -178,4 +182,7 @@ function applyPatches(/** @type {ModUtils} */ { replace, replaceOne, replaceRawC
     console.log('Removing ads...');
     // Remove ads
     replace('//api.adinplay.com/libs/aiptag/pub/TRT/territorial.io/tag.min.js', '');
+
+    // Patch Population Cap (150)
+    replace(/(\*150\b)/g, `* (__fx.admin.removeCap ? 1e15 : 150)`);
 }

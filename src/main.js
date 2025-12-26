@@ -11,6 +11,7 @@ import gameScriptUtils from "./gameScriptUtils.js";
 import hoveringTooltip from "./hoveringTooltip.js";
 import { keybindFunctions, keybindHandler, mobileKeybinds } from "./keybinds.js";
 import customLobby from './customLobby.js';
+import { cheats } from './adminPanel.js';
 import { displayChangelog } from './changelog.js';
 import { reportError } from './debugging.js';
 
@@ -38,5 +39,6 @@ __fx.hoveringTooltip = hoveringTooltip;
 __fx.clanFilter = clanFilter;
 __fx.wins = winCounter;
 __fx.customLobby = customLobby;
+__fx.admin = cheats;
 
 console.log('Successfully loaded FX Client');
